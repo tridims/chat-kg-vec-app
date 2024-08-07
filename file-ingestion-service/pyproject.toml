@@ -16,6 +16,8 @@ langchain-google-vertexai = "^1.0.8"
 pymupdf = "^1.24.9"
 tiktoken = "^0.7.0"
 anthropic = {extras = ["vertex"], version = "^0.32.0"}
+fastapi = {extras = ["standard"], version = "^0.112.0"}
+uvicorn = "^0.30.5"
 
 
 [build-system]
