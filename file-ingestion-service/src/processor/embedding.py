@@ -1,10 +1,10 @@
-from config import PARALLEL_BATCH_SIZE
-from llm import get_embedding_model
+from src.config import PARALLEL_BATCH_SIZE
+from src.llm import get_embedding_model
+from src.models.chunk_data import ChunkIdDocPair
+from src.utils.chunker import batch
 from langchain_community.graphs import Neo4jGraph
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import List, Dict, Any
-from models.chunk_data import ChunkIdDocPair
-from utils.chunker import batch
 
 
 def update_embedding_create_vector_index(

@@ -1,7 +1,7 @@
 import hashlib
 from typing import List
 from langchain.docstore.document import Document
-from models.chunk_data import ChunkData, ChunkIdDocPair, Relationship
+from src.models.chunk_data import ChunkData, ChunkIdDocPair, Relationship
 
 FIRST_CHUNK = "FIRST_CHUNK"
 NEXT_CHUNK = "NEXT_CHUNK"

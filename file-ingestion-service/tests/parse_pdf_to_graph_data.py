@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
-from extractor import extract_graph_from_local_file
-from graph_db import GraphDBDataAccess
-from models import SourceNode
+from src.models import SourceNode
+from src.graph_dao import GraphDBDataAccess
+from src.extractor import extract_graph_from_local_file
 from langchain_community.graphs import Neo4jGraph
 
 load_dotenv()

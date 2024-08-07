@@ -4,10 +4,11 @@ from langchain_community.graphs import Neo4jGraph
 from langchain.docstore.document import Document
 from typing import List
 import concurrent
-from config import CHUNK_COMBINE_SIZE, MAX_WORKERS
-from llm import get_llm_model
-from models.chunk_data import ChunkIdDocPair
-from utils.chunker import batch
+
+from src.config import CHUNK_COMBINE_SIZE, MAX_WORKERS
+from src.llm import get_llm_model
+from src.models.chunk_data import ChunkIdDocPair
+from src.utils.chunker import batch
 
 
 def generate_graph_documents(

@@ -2,8 +2,8 @@ from pathlib import Path
 from langchain.docstore.document import Document
 from langchain_community.graphs import Neo4jGraph
 from typing import List
-from processor.process import process_source
-from utils.file_tools import load_pdf
+from .processor.process import process_source
+from .utils.file_tools import load_pdf
 
 
 def extract_graph_from_local_file(

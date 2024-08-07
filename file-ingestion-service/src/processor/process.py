@@ -1,13 +1,13 @@
 from datetime import datetime
 from typing import List
-from config import CHUNK_BATCH_SIZE
-from graph_db import GraphDBDataAccess
-from models.chunk_data import ChunkIdDocPair
-from models.source_node import SourceNode
-from processor.embedding import update_embedding_create_vector_index
-from processor.graph_documents import generate_graph_documents
-from processor.relation import create_relation_between_chunks
-from utils.chunker import batch, clean_documents, split_file_into_chunks
+from src.config import CHUNK_BATCH_SIZE
+from src.graph_dao import GraphDBDataAccess
+from src.models.chunk_data import ChunkIdDocPair
+from src.models.source_node import SourceNode
+from src.processor.embedding import update_embedding_create_vector_index
+from src.processor.graph_documents import generate_graph_documents
+from src.processor.relation import create_relation_between_chunks
+from src.utils.chunker import batch, clean_documents, split_file_into_chunks
 from langchain_community.graphs import Neo4jGraph
 from langchain.docstore.document import Document
 

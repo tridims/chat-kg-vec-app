@@ -3,8 +3,8 @@ from typing import Any, Dict, List
 from langchain_community.graphs import Neo4jGraph
 import json
 import os
-from models import SourceNode
-from utils.file_tools import delete_file
+from src.models import SourceNode
+from src.utils.file_tools import delete_file
 
 
 class GraphDBDataAccess:
