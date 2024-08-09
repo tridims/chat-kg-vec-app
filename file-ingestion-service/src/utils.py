@@ -1,6 +1,8 @@
-from itertools import islice
 from typing import List
+from pathlib import Path
+from itertools import islice
 from langchain_text_splitters import TokenTextSplitter
+from langchain_community.document_loaders import PyMuPDFLoader
 from langchain.docstore.document import Document
 
 
@@ -42,3 +44,14 @@ def batch(iterable, batch_size: int):
         end_index = start_index + len(chunk) - 1
         yield start_index, end_index, chunk
         start_index += batch_size
+
+
+def delete_file(file_path: str):
+    file_path = Path(file_path)
+    if file_path.exists():
+        file_path.unlink()
+
+
+def load_pdf(file_path: str) -> List[Document]:
+    loader = PyMuPDFLoader(file_path)
+    return loader.load()
