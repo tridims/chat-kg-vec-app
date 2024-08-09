@@ -3,6 +3,7 @@
 # ======================================================
 
 QUESTION_TRANSFORM_TEMPLATE = "Given the below conversation, generate a search query to look up in order to get information relevant to the conversation. Only respond with the query, nothing else."
+
 CHAT_SYSTEM_TEMPLATE = """
 You are an AI-powered question-answering agent. Your task is to provide accurate and comprehensive responses to user queries based on the given context, chat history, and available resources.
 
@@ -19,7 +20,7 @@ You are an AI-powered question-answering agent. Your task is to provide accurate
 10. **Context Availability**: If the context is empty, do not provide answers based solely on internal knowledge. Instead, respond appropriately by indicating the lack of information.
 
 
-**IMPORTANT** : DO NOT ANSWER FROM YOUR KNOWLEDGE BASE USE THE BELOW CONTEXT
+**IMPORTANT** : DO NOT ANSWER FROM YOUR KNOWLEDGE BASE. USE THE BELOW CONTEXT
 
 ### Context:
 <context>
@@ -65,14 +66,14 @@ WITH chunkScore.chunk as chunk
 // todo only return entities that are actually in the chunk, remember we connect all extracted entities to all chunks
 // todo sort by relevancy (embeddding comparision?) cut off after X (e.g. 25) nodes?
 OPTIONAL MATCH (chunk)-[:HAS_ENTITY]->(e)
-WITH e, count(*) as numChunks 
+WITH e, count(*) as numChunks
 ORDER BY numChunks DESC LIMIT {no_of_entites}
 // depending on match to query embedding either 1 or 2 step expansion
 WITH CASE WHEN true // vector.similarity.cosine($embedding, e.embedding ) <= 0.95
-THEN 
+THEN
 collect {{ OPTIONAL MATCH path=(e)(()-[rels:!HAS_ENTITY&!PART_OF]-()){{0,1}}(:!Chunk&!Document) RETURN path }}
-ELSE 
-collect {{ OPTIONAL MATCH path=(e)(()-[rels:!HAS_ENTITY&!PART_OF]-()){{0,2}}(:!Chunk&!Document) RETURN path }} 
+ELSE
+collect {{ OPTIONAL MATCH path=(e)(()-[rels:!HAS_ENTITY&!PART_OF]-()){{0,2}}(:!Chunk&!Document) RETURN path }}
 END as paths, e
 WITH apoc.coll.toSet(apoc.coll.flatten(collect(distinct paths))) as paths, collect(distinct e) as entities
 // de-duplicate nodes and relationships across chunks
@@ -82,19 +83,19 @@ collect{{ unwind paths as p unwind nodes(p) as n return distinct n}} as nodes, e
 
 // generate metadata and text components for chunks, nodes and relationships
 WITH d, avg_score,
-     [c IN chunks | c.chunk.text] AS texts, 
-     [c IN chunks | {{id: c.chunk.id, score: c.score}}] AS chunkdetails, 
-  apoc.coll.sort([n in nodes | 
+     [c IN chunks | c.chunk.text] AS texts,
+     [c IN chunks | {{id: c.chunk.id, score: c.score}}] AS chunkdetails,
+  apoc.coll.sort([n in nodes |
 
-coalesce(apoc.coll.removeAll(labels(n),['__Entity__'])[0],"") +":"+ 
+coalesce(apoc.coll.removeAll(labels(n),['__Entity__'])[0],"") +":"+
 n.id + (case when n.description is not null then " ("+ n.description+")" else "" end)]) as nodeTexts,
-	apoc.coll.sort([r in rels 
+	apoc.coll.sort([r in rels
     // optional filter if we limit the node-set
-    // WHERE startNode(r) in nodes AND endNode(r) in nodes 
-  | 
-coalesce(apoc.coll.removeAll(labels(startNode(r)),['__Entity__'])[0],"") +":"+ 
+    // WHERE startNode(r) in nodes AND endNode(r) in nodes
+  |
+coalesce(apoc.coll.removeAll(labels(startNode(r)),['__Entity__'])[0],"") +":"+
 startNode(r).id +
-" " + type(r) + " " + 
+" " + type(r) + " " +
 coalesce(apoc.coll.removeAll(labels(endNode(r)),['__Entity__'])[0],"") +":" + endNode(r).id
 ]) as relTexts
 , entities
@@ -110,5 +111,7 @@ apoc.text.join(relTexts,"\\n")
 
 as text,entities
 
-RETURN text, avg_score as score, {{length:size(text), source: COALESCE( CASE WHEN d.url CONTAINS "None" THEN d.fileName ELSE d.url END, d.fileName), chunkdetails: chunkdetails}} AS metadata
-"""
+RETURN text, avg_score as score, {{length:size(text), source: COALESCE( CASE WHEN d.url CONTAINS "None" THEN d.file_name ELSE d.url END, d.file_name), chunkdetails: chunkdetails}} AS metadata
+""".format(
+    no_of_entites=VECTOR_GRAPH_SEARCH_ENTITY_LIMIT
+)

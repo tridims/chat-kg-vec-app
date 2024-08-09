@@ -1,6 +1,5 @@
 from langchain.chains import GraphCypherQAChain
-
-from llm import get_llm_model
+from src.client.llm import get_llm_model
 
 
 def create_graph_chain(graph):
