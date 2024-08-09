@@ -128,7 +128,7 @@ class GraphDBDataAccess:
             UNWIND $data AS row
             MATCH (d:Document {file_name: $file_name})
             MERGE (c:Chunk {id: row.chunk_id})
-            SET c.embedding = row.embeddings
+            SET c.embedding = row.embedding
             MERGE (c)-[:PART_OF]->(d)
             """,
             params={"file_name": file_name, "data": data},

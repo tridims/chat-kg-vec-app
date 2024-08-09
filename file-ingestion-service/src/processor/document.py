@@ -1,7 +1,12 @@
 from datetime import datetime
 import hashlib
 from typing import List
-from src.config import CHUNK_BATCH_SIZE, FIRST_CHUNK, NEXT_CHUNK
+from src.config import (
+    CHUNK_BATCH_SIZE,
+    FIRST_CHUNK,
+    NEXT_CHUNK,
+    VECTOR_EMBEDDING_DIMENSION,
+)
 from src.client.graph_db import GraphDBDataAccess
 from src.models.chunk import (
     ChunkDocument,
@@ -82,6 +87,8 @@ class DocumentProcessor:
         file_name: str,
         chunk_documents: List[ChunkDocument],
     ) -> tuple[int, int]:
+
+        self.db_dao.create_vector_index(VECTOR_EMBEDDING_DIMENSION)
 
         # create and add embeddings to the database
         embedding = self.embedding_generator.generate_embeddings(chunk_documents)
