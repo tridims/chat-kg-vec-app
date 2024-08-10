@@ -3,9 +3,9 @@ from langchain_community.graphs import Neo4jGraph
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.messages import HumanMessage, AIMessage
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
-from src.client.llm import LLMModel
-from src.processor.context_retriever import DataRetriever
-from src.templates import CHAT_SYSTEM_TEMPLATE
+from app.db.llm import LLMModel
+from app.services.processor.context_retriever import DataRetriever
+from app.models.templates import CHAT_SYSTEM_TEMPLATE
 
 
 class QAEngine:
@@ -23,7 +23,8 @@ class QAEngine:
         rag_chain = self._get_rag_chain()
         result = rag_chain.invoke(
             {
-                "messages": history.messages[:-1],
+                # "messages": history.messages[:-1],
+                "messages": history.messages,
                 "context": added_context,
                 "input": question,
             }

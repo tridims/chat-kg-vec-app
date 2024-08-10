@@ -1,7 +1,7 @@
 from typing import Dict, Any
 from langchain_community.chat_message_histories import Neo4jChatMessageHistory
-from src.processor.completions import QAEngine
-from src.processor.qa_tools import summarize_history
+from app.services.processor.completions import QAEngine
+from app.services.processor.qa_tools import summarize_history
 
 
 def get_chat_completions(
@@ -10,7 +10,7 @@ def get_chat_completions(
     try:
         history = Neo4jChatMessageHistory(graph=qa_engine.db, session_id=session_id)
         resp, metadata = qa_engine.get_answer(question, history)
-        summarize_history(history)
+        # summarize_history(history)
 
         return {
             "session_id": session_id,

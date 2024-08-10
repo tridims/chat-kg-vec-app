@@ -1,8 +1,7 @@
 from langchain_google_vertexai import VertexAIEmbeddings
 from langchain_google_vertexai.model_garden import ChatAnthropicVertex
 from langchain_openai import AzureChatOpenAI
-
-from src.config import ANTHROPIC_MODEL_NAME, ANTHROPIC_REGION
+from app.core.config import settings
 
 
 class LLMModel:
@@ -24,8 +23,8 @@ class LLMModel:
     def get_chat_anthropic(cls) -> ChatAnthropicVertex:
         if cls._llm_instance_anthropic is None:
             llm = ChatAnthropicVertex(
-                location=ANTHROPIC_REGION,
-                model_name=ANTHROPIC_MODEL_NAME,
+                location=settings.ANTHROPIC_REGION,
+                model_name=settings.ANTHROPIC_MODEL_NAME,
             )
             cls._llm_instance_anthropic = llm
         return cls._llm_instance_anthropic

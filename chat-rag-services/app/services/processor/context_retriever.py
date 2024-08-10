@@ -12,14 +12,9 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnableBranch
 from langchain_core.chat_history import BaseChatMessageHistory
 
-from src.client.llm import LLMModel
-from src.config import (
-    CHAT_DOC_SPLIT_SIZE,
-    CHAT_EMBEDDING_FILTER_SCORE_THRESHOLD,
-    CHAT_SEARCH_KWARG_K,
-    CHAT_SEARCH_KWARG_SCORE_THRESHOLD,
-)
-from src.templates import QUESTION_TRANSFORM_TEMPLATE, VECTOR_GRAPH_SEARCH_QUERY
+from app.db.llm import LLMModel
+from app.core.config import settings
+from app.models.templates import QUESTION_TRANSFORM_TEMPLATE, VECTOR_GRAPH_SEARCH_QUERY
 
 
 class DataRetriever:
@@ -27,19 +22,40 @@ class DataRetriever:
         self,
         graphdb_client: Neo4jGraph,
         llm_model: LLMModel = LLMModel,
-        search_k: int = CHAT_SEARCH_KWARG_K,
-        score_threshold: float = CHAT_SEARCH_KWARG_SCORE_THRESHOLD,
+        search_k: int = settings.CHAT_SEARCH_KWARG_K,
+        score_threshold: float = settings.CHAT_SEARCH_KWARG_SCORE_THRESHOLD,
     ):
         self.llm_model = llm_model
         self.graphdb_client = graphdb_client
         self.search_k = search_k
         self.score_threshold = score_threshold
-        self.vector_db = Neo4jVector.from_existing_index(
-            embedding=self.llm_model.get_embedding_model(),
-            index_name="vector",
-            retrieval_query=VECTOR_GRAPH_SEARCH_QUERY,
-            graph=self.graphdb_client,
-        )
+
+        try:
+            self.vector_db = Neo4jVector.from_existing_index(
+                embedding=self.llm_model.get_embedding_model(),
+                index_name="vector",
+                retrieval_query=VECTOR_GRAPH_SEARCH_QUERY,
+                graph=self.graphdb_client,
+            )
+        except Exception as e:
+            self.graphdb_client.query(
+                """
+                CREATE VECTOR INDEX vector IF NOT EXISTS FOR (c:Chunk) ON (c.embedding)
+                OPTIONS {
+                    indexConfig: {
+                        `vector.dimensions`: $dimension,
+                        `vector.similarity_function`: 'cosine'
+                    }
+                }
+                """,
+                {"dimension": 768},  # TODO: Change this to a config value
+            )
+            self.vector_db = Neo4jVector.from_existing_index(
+                embedding=self.llm_model.get_embedding_model(),
+                index_name="vector",
+                retrieval_query=VECTOR_GRAPH_SEARCH_QUERY,
+                graph=self.graphdb_client,
+            )
 
         self.vector_retriever = self._get_vector_retriever()
         self.document_retriever_chain = DocumentRetrieverChain(
@@ -68,11 +84,13 @@ class DocumentRetrieverChain:
         )
 
     def create_pipeline_compressor(self):
-        splitter = TokenTextSplitter(chunk_size=CHAT_DOC_SPLIT_SIZE, chunk_overlap=0)
+        splitter = TokenTextSplitter(
+            chunk_size=settings.CHAT_DOC_SPLIT_SIZE, chunk_overlap=0
+        )
         embedding_model = self.llm.get_embedding_model()
         embeddings_filter = EmbeddingsFilter(
             embeddings=embedding_model,
-            similarity_threshold=CHAT_EMBEDDING_FILTER_SCORE_THRESHOLD,
+            similarity_threshold=settings.CHAT_EMBEDDING_FILTER_SCORE_THRESHOLD,
         )
         return DocumentCompressorPipeline(transformers=[splitter, embeddings_filter])
 

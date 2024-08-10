@@ -1,4 +1,4 @@
-from src.client.llm import LLMModel
+from app.db.llm import LLMModel
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 

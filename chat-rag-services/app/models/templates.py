@@ -111,7 +111,9 @@ apoc.text.join(relTexts,"\\n")
 
 as text,entities
 
-RETURN text, avg_score as score, {{length:size(text), source: COALESCE( CASE WHEN d.url CONTAINS "None" THEN d.file_name ELSE d.url END, d.file_name), chunkdetails: chunkdetails}} AS metadata
+RETURN text, avg_score as score, {{length:size(text), source: COALESCE(d.file_name), chunkdetails: chunkdetails}} AS metadata
 """.format(
     no_of_entites=VECTOR_GRAPH_SEARCH_ENTITY_LIMIT
 )
+
+# RETURN text, avg_score as score, {{length:size(text), source: COALESCE( CASE WHEN d.url CONTAINS "None" THEN d.file_name ELSE d.url END, d.file_name), chunkdetails: chunkdetails}} AS metadata
