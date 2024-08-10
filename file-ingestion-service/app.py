@@ -1,10 +1,11 @@
 import os
+import shutil
 import requests
 import src.controller as controller
 from contextlib import asynccontextmanager
 from pydantic import BaseModel
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import BackgroundTasks, Depends, FastAPI, File, HTTPException, UploadFile
 from langchain_community.graphs import Neo4jGraph
 from src.config import TEMP_STORAGE
 from src.client.llm import LLMModel
@@ -18,10 +19,12 @@ llm_model = None
 
 
 def get_db():
+    global db
     return db
 
 
 def get_llm_model():
+    global llm_model
     return llm_model
 
 
@@ -42,14 +45,38 @@ async def read_root():
     return {"Hello": "World"}
 
 
-class FileExtractionRequest(BaseModel):
+def extract_file_task(db, llm_model, filename):
+    try:
+        result = controller.extract_pdf_document(db, llm_model, filename, filename)
+        os.remove(filename)
+    except Exception as e:
+        print(f"INTERNAL SERVER ERROR. Detail : \n{str(e)}")
+
+
+@app.post("/extract")
+async def file_extraction(
+    background_tasks: BackgroundTasks, file: UploadFile = File(...)
+):
+    try:
+        with open(file.filename, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+    finally:
+        file.file.close()
+
+    background_tasks.add_task(
+        extract_file_task, get_db(), get_llm_model(), file.filename
+    )
+    return {"message": "File extraction started in the background"}
+
+
+class RemoteFileExtractionRequest(BaseModel):
     file_uri: str
     notification_callback: str
 
 
-@app.post("/extraction")
-async def file_extraction(
-    req: FileExtractionRequest,
+@app.post("/extraction-remote-file")
+async def remotefile_extraction(
+    req: RemoteFileExtractionRequest,
     db: GraphDBDataAccess = Depends(get_db),
     llm_model=Depends(get_llm_model),
 ):
