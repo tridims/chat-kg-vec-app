@@ -1,36 +1,91 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Chat UI with Graph Visualization
 
-## Getting Started
+Next.js project that combines a chat interface with graph visualization and file upload capabilities. It provides an interactive platform for users to engage in conversations, visualize data in graph format, and manage document uploads.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Interactive Chat Interface**: Engage in real-time conversations with an AI-powered chat system.
+- **Dynamic Graph Visualization**: Visualize complex data structures with an auto-updating graph component.
+- **Document Management**: Upload, view, and delete documents within the application.
+- **Responsive Layout**: Utilize a resizable three-panel layout for optimal user experience.
+
+## Technologies Used
+
+- **Frontend**:
+  - Next.js
+  - React
+  - TypeScript
+  - Tailwind CSS
+  - Radix UI components
+  - React-Sigma (for graph visualization)
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── favicon.ico
+│   ├── globals.css
+│   ├── layout.tsx
+│   └── page.tsx
+├── components/
+│   ├── ui/
+│   ├── chat.tsx
+│   ├── dashboard.tsx
+│   ├── DisplayGraph.tsx
+│   ├── file_upload.tsx
+│   └── graph.tsx
+└── lib/
+    ├── graph.ts
+    └── utils.ts
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- `app/`: Contains the main application files, including the root layout and page components.
+- `components/`: Houses the main feature components and reusable UI components.
+- `lib/`: Contains utility functions and shared code.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Installation
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+1. Clone the repository and go to the project directory:
+2. Install dependencies:
+   ```
+   npm install
+   ```
 
-## Learn More
+## Usage
 
-To learn more about Next.js, take a look at the following resources:
+1. Start the development server:
+   ```
+   npm run dev
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+3. Use the chat interface in the left panel to interact with the AI system.
 
-## Deploy on Vercel
+4. Explore the graph visualization in the middle panel to view data relationships.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+5. Manage document uploads using the file upload interface in the right panel.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+## API Endpoints
+
+The application interacts with the following API endpoints:
+
+- `/chat/completions`: POST request for chat interactions
+- `/document`: GET request to fetch the list of documents, POST request to upload new documents
+- `/document/:filename`: DELETE request to remove a document
+- `/graph`: GET request to fetch graph data
+
+These api is provided by the chat-rag-services.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+[MIT License](LICENSE)
+
+---
+
+For more detailed information about using Next.js, check out the [Next.js Documentation](https://nextjs.org/docs) or try the [Learn Next.js](https://nextjs.org/learn) interactive tutorial.
