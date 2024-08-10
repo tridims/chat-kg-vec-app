@@ -1,0 +1,92 @@
+services:
+  chat-rag-services:
+    build:
+      context: ./chat-rag-services
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000" # Adjust the port as needed
+    env_file:
+      - ./.env
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/key.json
+      - FILE_INGESTION_SERVICE_URL=http://file-ingestion-service:8001/extract
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USERNAME=neo4j
+      - NEO4J_PASSWORD=supersecret
+    volumes:
+      - ./chat-rag-services:/app
+      - ./gcp-service-account.json:/app/key.json:ro
+    networks:
+      - app-network
+    depends_on:
+      neo4j:
+        condition: service_healthy
+
+  file-ingestion-service:
+    build:
+      context: ./file-ingestion-service
+      dockerfile: Dockerfile
+    env_file:
+      - ./.env
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/key.json
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USERNAME=neo4j
+      - NEO4J_PASSWORD=supersecret
+    volumes:
+      - ./file-ingestion-service:/app
+      - ./file-ingestion-service/temp_storage:/app/temp_storage
+      - ./gcp-service-account.json:/app/key.json:ro
+    networks:
+      - app-network
+    depends_on:
+      neo4j:
+        condition: service_healthy
+
+  neo4j:
+    image: neo4j:latest
+    # ports:
+    #   - "7474:7474" # HTTP
+    #   - "7687:7687" # Bolt
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+      - neo4j_import:/var/lib/neo4j/import
+      - neo4j_plugins:/plugins
+    environment:
+      - NEO4J_AUTH=neo4j/supersecret
+      - NEO4J_apoc_export_file_enabled=true
+      - NEO4J_apoc_import_file_enabled=true
+      - NEO4J_apoc_import_file_use__neo4j__config=true
+      - NEO4JLABS_PLUGINS=["apoc"]
+    networks:
+      - app-network
+    healthcheck:
+      test:
+        ["CMD", "cypher-shell", "-u", "neo4j", "-p", "supersecret", "RETURN 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  chat-ui:
+    build:
+      context: ./chat-ui
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    env_file:
+      - ./.env
+    networks:
+      - app-network
+    depends_on:
+      - chat-rag-services
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  neo4j_data:
+  neo4j_logs:
+  neo4j_import:
+  neo4j_plugins:
